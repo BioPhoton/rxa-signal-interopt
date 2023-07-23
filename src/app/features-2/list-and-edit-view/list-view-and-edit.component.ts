@@ -36,6 +36,8 @@ export class ListAndEditViewContainerComponent {
     private listViewAdapter = inject(ListViewAdapter);
     private editViewAdapter = inject(EditViewAdapter);
 
+    // @TODO add router input
+
     protected actions = rxActions<ListViewAndEditUi>(({transforms}) =>
         transforms({searchInput: eventValue, refresh: (_?: unknown) => void 0}),
     );
