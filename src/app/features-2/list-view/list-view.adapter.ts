@@ -1,7 +1,7 @@
 import {MovieService} from "../../state/movie.state";
 
 import {inject, Injectable} from "@angular/core";
-import {rxActions, rxEffects, rxState} from "../../rxa";
+import {rxActions, rxState} from "../../rxa";
 import {Movie} from "../../model/movie";
 
 

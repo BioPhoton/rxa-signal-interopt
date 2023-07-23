@@ -2,7 +2,7 @@ import {Component, EventEmitter, inject, Input, Output, Signal} from '@angular/c
 import {rxState} from "../../rxa";
 import {Movie} from "../../model/movie";
 import {NgModel} from "@angular/forms";
-import {BackupHandler} from "./backup";
+import {BackupHandler} from "../backup";
 
 type EditState = {
     movie: Movie | null

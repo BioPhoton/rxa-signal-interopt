@@ -8,7 +8,7 @@ import {EditViewComponent} from "../edit-view/edit-view.component";
 import {EditViewAdapter} from "../edit-view/edit-view.adapter";
 import {ListViewComponent} from "../list-view/list-view.component";
 import {ListViewAdapter} from "../list-view/list-view.adapter";
-import {TypingDebounceTime} from "../typingDebounce";
+import {TypingDebounceTime} from "../typingDebounc";
 
 type ListViewState = {
     movie: Movie,
@@ -28,8 +28,8 @@ type ListViewAndEditUi = {
     imports: [NgFor, ListViewComponent, EditViewComponent],
     selector: 'list-and-edit-view',
     template: `
-        <list-view [list]="computedList" (refresh)="onRefresh()" (search)="actions.searchInput($event)"></list-view>
-        <edit-view (edit)="onEdit($event)" (save)="onSave($event)"></edit-view>
+        <list-view [list]="computedList" (refresh)="refreshMovies()" (search)="actions.searchInput($event)"></list-view>
+        <edit-view (edit)="editMovie($event)" (save)="updateMovie($event)"></edit-view>
   `
 })
 export class ListAndEditViewContainerComponent {
@@ -45,7 +45,7 @@ export class ListAndEditViewContainerComponent {
     });
     protected computedList = this.state.computed(({list, query}) => list.filter(m => m.name.includes(query)));
 
-    onEdit = this.editViewAdapter.edit;
-    onSave = this.editViewAdapter.updateMovie;
-    onRefresh = this.listViewAdapter.refreshMovies;
+    editMovie = this.editViewAdapter.editMovie;
+    updateMovie = this.editViewAdapter.updateMovie;
+    refreshMovies = this.listViewAdapter.refreshMovies;
 }

@@ -34,10 +34,11 @@ export class EditViewAdapter {
         onCleanup(updateMovieBackup)
     });
 
-    edit = this.actions.onEdit(
+    editMovie = this.actions.onEdit(
         $ => $.pipe(debounceTime(300)),
         (m: Movie) => this.backupHandler.updateBackup(m)
     );
+
     movie = computed((): Movie | null => {
         const id = this.state.computed(({activeId}) => activeId);
         return this.movieState.movie(id())();

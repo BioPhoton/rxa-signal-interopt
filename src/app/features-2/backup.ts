@@ -1,17 +1,16 @@
-import {InjectionToken} from "@angular/core";
+import {InjectionToken, Provider} from "@angular/core";
 import {LocalStorage} from "../shared/localStorage";
 import {Movie} from "../model/movie";
 import {Observable, timer} from "rxjs";
 
-
-type Backup<T> ={
+export type Backup<T> ={
     getBackup: <T>() => T,
     updateBackup: <T>(v: T | null) => void,
     clearBackup: () => void,
 };
 export const BackupHandler = <T>() => new InjectionToken<Backup<T>>('BackupHandler');
 
-export const provideBackupHandler = (key: string) => ({
+export const provideBackupHandler = (key: string): Provider => ({
     provide: BackupHandler<Movie>(),
     useFactory: (localStorage: LocalStorage) => {
         return {
@@ -35,7 +34,7 @@ export const provideBackupHandler = (key: string) => ({
 });
 
 export const BackupTick = new InjectionToken<Observable<unknown>>('BackupTick');
-export const provideBackupTick = (ms = 3000) => ({
+export const provideBackupTick = (ms = 3000): Provider => ({
     provide: BackupTick,
-    useFactory: () => timer(0, ms)
+    useFactory: ()  => timer(0, ms)
 })
