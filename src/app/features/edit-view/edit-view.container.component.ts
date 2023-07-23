@@ -2,7 +2,7 @@ import {Component, inject} from '@angular/core';
 import {rxEffects, rxState} from "../../rxa";
 import {Movie} from "../../model/movie";
 import {MovieService} from "../../state/movie.state";
-import {interval, timer} from "rxjs";
+import {timer} from "rxjs";
 import {LocalStorage} from "../../shared/localStorage";
 
 
@@ -13,12 +13,12 @@ type EditState = {
 @Component({
     standalone: true,
     imports: [],
-    selector: 'detail-view',
+    selector: 'edit-view',
     template: `
   <h1>Edit Movie</h1>
   <form *ngIf="movie(); else: noMovie" (submit)="save(event$)">
       <label>Movie Name</label>
-      <input (ngModel)="movie().name" (ngModelChange)="movie.update(movie => ({...movie, name: $event}))" />
+      <input (ngModel)="movie().name" (ngModelChange)="state.set('movie', movie => ({...movie, name: $event}))" />
       <br/>
       <button (click)="ui.save($event)">Save Movies</button>
   </form>
@@ -29,7 +29,7 @@ type EditState = {
   `,
     styleUrls: ['./app.component.scss'],
 })
-export class ListViewContainerComponent {
+export class EditViewContainerComponent {
     private localStorage = inject(LocalStorage);
     private movieState = inject(MovieService);
     private backUpEffect = rxEffects(({register}) => {

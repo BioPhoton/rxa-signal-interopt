@@ -20,7 +20,7 @@ export class LocalStorage {
         localStorage.removeItem(key)
     }
 
-    getItem<T>(key: string): T {
+    getItem<T = string>(key: string): T {
         return JSON.parse(localStorage.getItem(key) || '')
     }
 

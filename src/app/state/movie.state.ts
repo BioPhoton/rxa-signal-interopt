@@ -58,7 +58,7 @@ export class MovieService {
         );
 
     });
-    movies = this.state.computed(({movies}) => movies);
+    movies = this.state.computedShort('movies');
 
     // movies = this.state.computed('movies');
     movie(id: string) {

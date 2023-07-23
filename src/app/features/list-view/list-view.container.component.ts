@@ -22,6 +22,7 @@ type ListViewUi = {
     imports: [NgFor],
     selector: 'list-view',
     template: `
+        
       <input name="search" (change)="ui.search($event)" /><br/>
       <button (click)="ui.refresh($event)">Refresh Movies</button>
       <!-- <button (click)="refreshList()">Refresh Movies</button> -->

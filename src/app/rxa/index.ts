@@ -50,6 +50,7 @@ type NewState<T extends object> = {
         reduce: (s: T[K], v: unknown) => T[K]
     ) => () => void
 } & RxState<T> & {
+    computedShort: <K extends keyof T = keyof T>(key: K) => Signal<T[K]>,
     computed: <O = T>( fn: (s: T) => O) => Signal<O>,
     connect: Connect<T>
 }
