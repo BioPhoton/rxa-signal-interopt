@@ -1,38 +1,46 @@
-import {inject, Injectable, InjectionToken} from "@angular/core";
-import {rxActions, rxState} from "../../rxa";
+import {computed, inject, Injectable} from "@angular/core";
+import {rxActions, rxEffects, rxState} from "../../rxa";
 import {Movie} from "../../model/movie";
-import {LocalStorage} from "../../shared/localStorage";
 import {MovieService} from "../../state/movie.state";
-import {rxEffects} from "../../rxa";
-import {Observable, timer} from "rxjs";
-
+import {BackupHandler, BackupTick, provideBackupHandler, provideBackupTick} from "../backup";
+import {debounceTime} from "rxjs";
 
 type EditViewAdapterState = {
-    movies: Movie[]
+    activeId: Movie['id']
 }
 type EditViewActions = {
-    refresh: void
+    edit: Movie
 }
 
-const UpdateTick = new InjectionToken<Observable<unknown>>('UpdateTick');
 @Injectable({
     providedIn: 'root',
     deps: [
-        {
-            provide: UpdateTick,
-            useFactory: () => timer(0, 3000)
-        }
+        provideBackupHandler('editMovie'),
+        provideBackupTick()
     ]
 })
 export class EditViewAdapter {
-
-    private localStorage = inject(LocalStorage);
+    private backupHandler = inject(BackupHandler);
+    private backupTick$ = inject(BackupTick);
     private movieState = inject(MovieService);
+    private state = rxState<EditViewAdapterState>(({set}) => {
+        set('activeId', this.backupHandler.getBackup());
+    });
     protected actions = rxActions<EditViewActions>();
-    private state = rxState<EditViewAdapterState>(({connect}) => {
-            connect('movies', this.movieState.movies);
-    })
 
-    movie = this.movieState.movie
+    private backUpEffect = rxEffects(({register, onCleanup}) => {
+        const updateMovieBackup = () => this.backupHandler.updateBackup(this.movie())
+        register(this.backupTick$, updateMovieBackup);
+        onCleanup(updateMovieBackup)
+    });
+
+    edit = this.actions.onEdit(
+        $ => $.pipe(debounceTime(300)),
+        (m: Movie) => this.backupHandler.updateBackup(m)
+    );
+    movie = computed((): Movie | null => {
+        const id = this.state.computed(({activeId}) => activeId);
+        return this.movieState.movie(id())();
+    })
     updateMovie = this.movieState.updateMovie
 }

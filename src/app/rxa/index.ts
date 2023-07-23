@@ -12,7 +12,7 @@ export type ActionListener<T extends Actions, O = unknown> = {
     [K in ExtractString<T> as `on${Capitalize<K>}`]: (
         behaviour: OperatorFunction<T[K], O>,
         sideEffect: (v: T[K]) => void
-    ) => () => void
+    ) => (m: T[K]) => void
 };
 
 
@@ -24,8 +24,12 @@ export function rxActions<
 >(setupFn?: (cfg: { transforms: (t: U) => void }) => void): NewRxActions<T>  {
     return '' as unknown as NewRxActions<T>
 }
-export function rxEffects<T>(setupFn?: (cfg: { register: (v: Observable<T>, t: T) => void }) => void): () => void {
-   return () => void 0;
+export function rxEffects<T>(
+    setupFn?: (cfg: {
+        register: (v: Observable<T>, t: T) => void,
+        onCleanup: (onDestroy: () => void) => void
+    }) => void) {
+    return () => void 0;
 }
 
 type Set<T extends object> = RxState<T>['set'];

@@ -1,5 +1,5 @@
 import {inject, Injectable} from "@angular/core";
-import {insert, upsert} from "@rx-angular/cdk/transformations";
+import {upsert} from "@rx-angular/cdk/transformations";
 import {catchError, EMPTY, exhaustMap} from "rxjs";
 
 import {rxActions, rxState} from "../rxa";
@@ -60,7 +60,6 @@ export class MovieService {
     });
     movies = this.state.computedShort('movies');
 
-    // movies = this.state.computed('movies');
     movie(id: string) {
         return this.state.computed(({movies}) => movies.find(m => m.id === id) || null);
     }
@@ -74,7 +73,7 @@ export class MovieService {
     }
 
     constructor() {
-        // TO DISCUUSS
+        // TO DISCUSS
        /* this.state.connectMovies(
             this.actions.refresh$.pipe(exhaustMap((movie) => this.moviesResource.getMovies())),
             (newMovie) => newMovie.map(movie => getDtoToModel(movie as ny))

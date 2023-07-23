@@ -2,12 +2,19 @@ import {Component, EventEmitter, inject, Input, Output, Signal} from '@angular/c
 import {rxState} from "../../rxa";
 import {Movie} from "../../model/movie";
 import {NgModel} from "@angular/forms";
-import {BackupHandler} from "./backup-handler";
+import {BackupHandler} from "./backup";
 
 type EditState = {
     movie: Movie | null
 };
 
+/**
+ * - input for currently edited movie
+ * - output for save edited movie
+ * - output for edit edited movie
+ * - movie in form
+ * - submit form === save output
+ */
 @Component({
     standalone: true,
     imports: [NgModel],
