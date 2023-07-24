@@ -1,17 +1,35 @@
 import {RxState} from "@rx-angular/state";
 import {
+    computed,
     CreateSignalOptions,
     DestroyRef,
     effect,
-    EffectRef,
+    EffectRef, EventEmitter as NativeEventEmitter,
     inject, isSignal,
     signal as originalSignal,
     Signal,
     WritableSignal as originalWritableSignal
 } from "@angular/core";
 import {Actions, ActionTransforms, RxActions} from "@rx-angular/state/actions/lib/types";
-import {connect, Observable, OperatorFunction} from "rxjs";
+import {
+    combineLatest,
+    combineLatestWith,
+    connect,
+    EMPTY,
+    from,
+    map,
+    Observable,
+    of,
+    OperatorFunction,
+    startWith,
+    switchMap,
+    tap
+} from "rxjs";
 import {toSignal} from "@angular/core/rxjs-interop";
+import {HttpClient, HttpContext, HttpHeaders, HttpResponse} from "@angular/common/http";
+import {fromPromise} from "rxjs/internal/observable/innerFrom";
+import {Params} from "@angular/router";
+import {Movie} from "../model/movie";
 
 
 type InstanceOrType<T> = T extends abstract new (...args: any) => infer R ? R : T;
@@ -119,3 +137,51 @@ export function signal<T>(v: T, options?: CreateSignalOptions<T> & {connect: (si
     })
     return innerSignal as WritableSignal<T>;
 }
+
+
+type EventEmitterExtensions<T> = {
+    on: (
+        effectFn: (onCleanup: (fn: () => any) => void) => void,
+        options?: Pick<CreateEventEmitterOptions<T>, 'behaviour'>
+    ) => void
+}
+
+
+type aS<O, I = unknown> = I extends never ? O : I;
+export type CreateEventEmitterOptions<T> = {
+    on?: (v: T) => void,
+    behaviour?: OperatorFunction<any, T>,
+    transform?: (v: T) => any
+};
+export type EventEmitter<T = void> = NativeEventEmitter<T> & EventEmitterExtensions<T>;
+export function eventEmitter<T>(setupFn?:() => CreateEventEmitterOptions<T>): EventEmitter<T> {
+    const eE =  new NativeEventEmitter<T>() as unknown as EventEmitter<T>;
+    (eE as any).on = (cb: () => void) => {
+        const sub = (eE as Observable<T>).subscribe(() => {
+            setUpEffect(cb, sub.unsubscribe)
+        })
+    }
+
+    // setup
+    const cfg = setupFn ? setupFn() : {};
+    if(cfg?.on && typeof cfg.on === 'function') {
+       //  setUpEffectSub(eE, () => cfg.on())
+    }
+
+    return eE as unknown as EventEmitter<T>;
+}
+
+
+function setUpEffectSub<T>(obs: Observable<T>, cb:() => T) {
+    const sub = obs.subscribe(() => {
+        setUpEffect(cb, sub.unsubscribe)
+    })
+}
+function setUpEffect<T>(ef: () => T, onCleanupCb: () => void) {
+    const comp = computed(ef);
+    effect((onCleanup) => {
+        comp();
+        onCleanup(onCleanupCb)
+    });
+}
+
