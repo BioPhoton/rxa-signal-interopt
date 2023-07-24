@@ -51,14 +51,12 @@ export class ListAndEditContainerComponent {
     private listUpdateFromStateEf = effect(() => this.list.set(this.movieState.movies()));
     protected query = signal('');
     private queryChange = toSignal(this.searchInput.pipe(map(eventValue), debounceTime(300)), {initialValue: ''});
-    private queryUpdateFromStateEf = effect(() => {
-        this.query.set(this.queryChange())
-    });
+    private queryUpdateFromStateEf = effect(() => this.query.set(this.queryChange()));
     // state derivation
     protected movies = computed(() => this.list().filter(m => m.name.includes(this.query())));
 
     // effects
-    private tick = toSignal<number>(timer(0, 3000));
+    private tick = toSignal<void>(timer(0, 3000).pipe(map(_ => void 0)));
     private updateBackup = () => this.localStorage.setItem('editMovie', this.movie());
     private backUpEffect = effect((onCleanup) => {
         this.tick(); // on tick execute side effect
@@ -66,10 +64,9 @@ export class ListAndEditContainerComponent {
         onCleanup(this.updateBackup);
     });
 
-    protected refresh() {
-        this.movieState.refreshMovies()
-    }
-    protected save() {
+    // normal functions
+    protected refresh = () => this.movieState.refreshMovies()
+    protected save = () => {
         const m = this.movie();
         if (m !== null) {
             this.movieState.updateMovie(m);

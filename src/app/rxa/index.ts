@@ -1,9 +1,9 @@
 import {RxState} from "@rx-angular/state";
 import {
-    computed,
+    computed, CreateEffectOptions,
     CreateSignalOptions,
     DestroyRef,
-    effect,
+    effect, EffectCleanupFn,
     EffectRef, EventEmitter as NativeEventEmitter,
     inject, isSignal,
     signal as originalSignal,
@@ -141,32 +141,31 @@ export function signal<T>(v: T, options?: CreateSignalOptions<T> & {connect: (si
 
 type EventEmitterExtensions<T> = {
     on: (
-        effectFn: (onCleanup: (fn: () => any) => void) => void,
+        effectFn: (cleanupFn: EventEmitterEffectCleanupRegisterFn) => void,
         options?: Pick<CreateEventEmitterOptions<T>, 'behaviour'>
     ) => void
 }
 
+export declare type EventEmitterCleanupFn = () => void;
 
-type aS<O, I = unknown> = I extends never ? O : I;
-export type CreateEventEmitterOptions<T> = {
-    on?: (v: T) => void,
+declare type EventEmitterEffectCleanupRegisterFn = (cleanupFn: EffectCleanupFn) => void;
+export type CreateEventEmitterOptions<T> = CreateEffectOptions & {
+    on?: (cleanupFn: EventEmitterEffectCleanupRegisterFn) => void,
     behaviour?: OperatorFunction<any, T>,
     transform?: (v: T) => any
 };
 export type EventEmitter<T = void> = NativeEventEmitter<T> & EventEmitterExtensions<T>;
-export function eventEmitter<T>(setupFn?:() => CreateEventEmitterOptions<T>): EventEmitter<T> {
+export function eventEmitter<T>(
+    options?: CreateEventEmitterOptions<T>
+): EventEmitter<T> {
     const eE =  new NativeEventEmitter<T>() as unknown as EventEmitter<T>;
-    (eE as any).on = (cb: () => void) => {
+    (eE as any).on = (cleanupFn: EventEmitterEffectCleanupRegisterFn): void => {
         const sub = (eE as Observable<T>).subscribe(() => {
-            setUpEffect(cb, sub.unsubscribe)
+            setUpEffect(cleanupFn, sub.unsubscribe)
         })
     }
 
     // setup
-    const cfg = setupFn ? setupFn() : {};
-    if(cfg?.on && typeof cfg.on === 'function') {
-       //  setUpEffectSub(eE, () => cfg.on())
-    }
 
     return eE as unknown as EventEmitter<T>;
 }
@@ -177,8 +176,8 @@ function setUpEffectSub<T>(obs: Observable<T>, cb:() => T) {
         setUpEffect(cb, sub.unsubscribe)
     })
 }
-function setUpEffect<T>(ef: () => T, onCleanupCb: () => void) {
-    const comp = computed(ef);
+function setUpEffect<T>(ef: EventEmitterEffectCleanupRegisterFn, onCleanupCb: () => void) {
+    const comp = computed(ef as any);
     effect((onCleanup) => {
         comp();
         onCleanup(onCleanupCb)

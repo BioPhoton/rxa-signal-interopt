@@ -41,37 +41,31 @@ export class ListAndEditContainerComponent {
     private movieState = inject(MovieService);
 
     // actions
-    protected searchInput = eventEmitter<string>(() => ({
+    protected searchInput = eventEmitter<string>({
         transform: eventValue,
         behaviour: debounceTime(300)
-    }));
+    });
 
     // state
     protected movie = signal<Movie | null>(this.localStorage.getItem<Movie>('editMovie'),
         {connect: () => this.movieState.movie('2')});
-    protected list = signal<Movie[]>([],
-        {connect: () => this.movieState.movies});
-    protected query = signal('',
-        {connect: () => this.searchInput});
+    protected list = signal<Movie[]>([], {connect: () => this.movieState.movies});
+    protected query = signal('', {connect: () => this.searchInput});
     // state derivation
     protected movies = computed(() => this.list().filter(m => m.name.includes(this.query())));
 
     // effects
-    private tick = eventEmitter<void>(() => ({
-        behaviour: () => timer(0, 3000).pipe(map(_ => void 0))
-    }));
     private updateBackup = () => this.localStorage.setItem('editMovie', this.movie());
+    private tick = eventEmitter<void>(
+        {behaviour: () => timer(0, 3000).pipe(map(_ => void 0))});
     private backUpEffect = this.tick.on((onCleanup) => {
         this.updateBackup();
         onCleanup(this.updateBackup)
     });
 
     // normal functions
-    protected refresh() {
-        this.movieState.refreshMovies()
-    }
-
-    protected save() {
+    protected refresh = () => this.movieState.refreshMovies()
+    protected save = () => {
         const m = this.movie();
         if (m !== null) {
             this.movieState.updateMovie(m);
