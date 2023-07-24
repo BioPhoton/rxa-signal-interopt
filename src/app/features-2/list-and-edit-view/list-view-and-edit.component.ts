@@ -28,15 +28,19 @@ type ListViewAndEditUi = {
     imports: [NgFor, ListViewComponent, EditViewComponent],
     selector: 'list-and-edit-view',
     template: `
-        <list-view [list]="computedList" (refresh)="refreshMovies()" (search)="actions.searchInput($event)"></list-view>
-        <edit-view (edit)="editMovie($event)" (save)="updateMovie($event)"></edit-view>
-  `
+        <section class="list">
+            <list-view [list]="computedList" (refresh)="refreshMovies()"
+                       (search)="actions.searchInput($event)"></list-view>
+        </section>
+        <section class="edit">
+            <edit-view (edit)="editMovie($event)" 
+                       (save)="updateMovie($event)"></edit-view>
+        </section>
+    `
 })
 export class ListAndEditViewContainerComponent {
     private listViewAdapter = inject(ListViewAdapter);
     private editViewAdapter = inject(EditViewAdapter);
-
-    // @TODO add router input
 
     protected actions = rxActions<ListViewAndEditUi>(({transforms}) =>
         transforms({searchInput: eventValue, refresh: (_?: unknown) => void 0}),
