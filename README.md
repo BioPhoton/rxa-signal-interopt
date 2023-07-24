@@ -7,4 +7,6 @@ The following examples are signals only:
 
 Todos:
 - [] hack new API to to working (minimum types)
-- [] [F2] add router input
+- [] F2 - add router input
+- [] F1 - movie = this.state.computed('movie'); typing
+

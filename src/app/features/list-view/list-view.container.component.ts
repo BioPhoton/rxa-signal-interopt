@@ -23,9 +23,8 @@ type ListViewUi = {
     selector: 'list-view',
     template: `
         
-      <input name="search" (change)="ui.search($event)" /><br/>
-      <button (click)="ui.refresh($event)">Refresh Movies</button>
-      <!-- <button (click)="refreshList()">Refresh Movies</button> -->
+      <input name="search" (change)="ui.searchInput($event)" /><br/>
+      <button (click)="refresh($event)">Refresh Movies</button>
       
       <ul>
         <li *ngFor="let movie of movies()">{{movie.name}}</li>
@@ -42,12 +41,6 @@ export class ListViewContainerComponent {
         connect('query', this.ui.searchInput$.pipe(debounceTime(300)));
     });
 
-    protected refreshList() {
-        this.movieState.refreshMovies();
-    }
+    protected refresh = this.ui.onRefresh(() => this.movieState.refreshMovies());
     protected movies = this.state.computed(({list, query}) => list.filter(m => m.name.includes(query)));
-
-    private refreshEf = this.ui.onRefresh(refresh$ => refresh$, () => this.movieState.refreshMovies());
-    // replaces:
-    // private refreshEf = rxEffects(({register}) => register(this.ui.refresh$, () => this.movieState.refreshMovies()));
 }

@@ -1,4 +1,4 @@
-import {Component, inject} from '@angular/core';
+import {Component, inject, Signal} from '@angular/core';
 import {rxEffects, rxState} from "../../rxa";
 import {Movie} from "../../model/movie";
 import {MovieService} from "../../state/movie.state";
@@ -16,11 +16,11 @@ type EditState = {
     selector: 'edit-view',
     template: `
   <h1>Edit Movie</h1>
-  <form *ngIf="movie(); else: noMovie" (submit)="save(event$)">
+  <form *ngIf="movie(); else: noMovie" (submit)="save()">
       <label>Movie Name</label>
       <input (ngModel)="movie().name" (ngModelChange)="state.set('movie', movie => ({...movie, name: $event}))" />
       <br/>
-      <button (click)="ui.save($event)">Save Movies</button>
+      <button type="submit">Save Movies</button>
   </form>
   
   <ng-template #noMovie>
@@ -32,25 +32,23 @@ type EditState = {
 export class EditViewContainerComponent {
     private localStorage = inject(LocalStorage);
     private movieState = inject(MovieService);
-    private backUpEffect = rxEffects(({register}) => {
+    private backUpEffect = rxEffects(({register, onCleanup}) => {
         const updateBackup = () => this.localStorage.setItem('editMovie', this.movie())
         register(timer(0, 3000), updateBackup);
-        // onDestroy
-        return updateBackup
+        onCleanup(updateBackup);
     });
     state = rxState<EditState>(({set, connect}) => {
         set({movie: this.localStorage.getItem<Movie>('editMovie')})
         connect('movie', this.movieState.movie('2'));
     });
 
-    movie = this.state.computed(({movie}) => movie);
-
+    movie = this.state.computed('movie') as Signal<Movie>;
     save() {
         const m = this.movie();
         if(m !== null) {
             this.movieState.updateMovie(m);
+            this.localStorage.removeItem('editMovie');
         }
-        this.localStorage.removeItem('editMovie');
     }
 
 }
